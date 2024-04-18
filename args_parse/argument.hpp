@@ -60,64 +60,64 @@ namespace args_parse {
 
 	class ArgumentBase {
 	public:
-		/// @brief конструктор класса
-		/// конструктор для случая, когда есть как короткое, так и длинное имя
+		/// @brief Конструктор класса
+		/// Конструктор для случая, когда есть как короткое, так и длинное имя
 		ArgumentBase(char shortName, const char* longName, bool isValue) :
 			_shortName(shortName), _longName(longName), _isValue(isValue), _description(""), _isDefined(false) {}
 
-		/// конструктор для случая, когда нет короткого имени
+		/// Конструктор для случая, когда нет короткого имени
 		ArgumentBase(const char* longName, bool isValue) : ArgumentBase('\0', longName, isValue) {}
 
-		/// конструктор по умолчанию
+		/// Конструктор по умолчанию
 		ArgumentBase() : ArgumentBase('\0', "", false) {}
 
-		/// @brief проверка может ли быть у аргумента значение
+		/// @brief Проверка может ли быть у аргумента значение
 		[[nodiscard]] bool HasValue() const { return _isValue; }
 
-		/// @brief get() для получения значени¤ поля, соответствующего в классе
+		/// @brief Получение длинного имени
 		[[nodiscard]] std::string GetLongName() const { return _longName; }
 
-		/// @brief метод set() для присваивания значения полю, соответствующему в классе
+		/// @brief Установка длинного имени
 		void SetLongName(const char* longName) { _longName = longName; }
 
-		/// @brief get() для получения значения поля, соответствующего в классе
+		/// @brief Получение короткого имени
 		[[nodiscard]] char GetShortName() const { return _shortName; }
 
-		/// @brief метод set() для присваивания значения полю, соответствующему в классе
+		/// @brief Установка короткого имени
 		void SetShortName(const char shortName) { _shortName = shortName; }
 
-		/// @brief get() для получения значения поля, соответствующего в классе
+		/// @brief Получение описания аргумента
 		[[nodiscard]] std::string GetDescription() const { return _description; }
 
-		/// @brief метод set() для присваивания значения полю, соответствующему в классе
+		/// @brief Установка описания аргумента
 		void SetDescription(const std::string& description) { _description = description; }
 
-		/// @brief метод set() для присваивания значения полю, соответствующему в классе
+		/// @brief Установка определения аргумента
 		void SetIsDefined(const bool isDefined) { _isDefined = isDefined; }
 
-		/// @brief get() для получения значения поля, соответствующего в классе
+		/// @brief Проверка определения аргумента
 		[[nodiscard]] bool GetIsDefined() const { return _isDefined; }
 
 		//[[nodiscard]] virtual const SharedValidator* GetValidator() const = 0;
 
-		/// @brief метод для получения существует ли валидатор
+		/// @brief Проверка существования валидатора
 		[[nodiscard]] virtual bool IsValidatorExist() const = 0;
 
-		/// @brief метод для получения результата валидации и установки значения
+		/// @brief Получение результата валидации и установка значения
 		[[nodiscard]] virtual bool ValidationAndSetValue(std::string_view value) = 0;
 
 		//virtual void SetValue(const std::string& value) = 0;
 
 	private:
-		///короткое описание аргумента
+		///Короткое описание аргумента
 		char _shortName;
-		///длинное описание аргумента
+		///Длинное описание аргумента
 		std::string _longName;
-		///дополнительное описание аргумента
+		///Дополнительное описание аргумента
 		std::string _description;
-		///флаг на наличие параметра
+		///Флаг на наличие параметра
 		bool _isValue;
-		///флаг на определение аргумента
+		///Флаг на определение аргумента
 		bool _isDefined;
 	};
 
@@ -126,16 +126,16 @@ namespace args_parse {
 	public:
 		using ArgumentBase::ArgumentBase;
 
-		/// @brief конструктор класса
-		/// конструктор для случая, когда есть как короткое, так и длинное имя
+		/// @brief Конструктор класса
+		/// Конструктор для случая, когда есть как короткое, так и длинное имя
 		Argument(char shortName, const char* longName, bool isValue, Validator<T>* validator) :
 			ArgumentBase(shortName, longName, isValue), _validator(validator) {}
 
-		/// конструктор для случая, когда нет короткого имени
+		/// Конструктор для случая, когда нет короткого имени
 		Argument(const char* longName, bool isValue, Validator<T>* validator) :
 			ArgumentBase('\0', longName, isValue), _validator(validator) {}
 
-		/// @brief метод set() для присваивания значения полю, соответствующему в классе
+		/// @brief Установка значения аргументу
 		void SetValue(const std::optional<T>& value) {
 			_value = value;
 		}
@@ -144,7 +144,8 @@ namespace args_parse {
 			if (_validator == nullptr) return false;
 			return true;
 		}
-		/// @brief get() для получения значения поля, соответстувющего в классе
+
+		/// @brief Получение значения аргумента
 		[[nodiscard]] std::optional<T> GetValue() const { return _value; }
 
 		bool ValidationAndSetValue(std::string_view value)  override {
@@ -157,33 +158,33 @@ namespace args_parse {
 		}
 
 	protected:
-		///значение аргумента
+		///Значение аргумента
 		std::optional<T> _value;
-		/// валидатор
+		///Валидатор
 		Validator<T>* _validator;
 	};
 
 	template<>
 	class Argument<std::chrono::milliseconds> : public ArgumentBase {
 	private:
-		///значение аргумента
+		///Значение аргумента
 		std::chrono::milliseconds _value;
-		/// валидатор
+		///Валидатор
 		Validator<std::chrono::milliseconds>* _validator;
 
 	public:
-		/// @brief конструктор класса
-		/// конструктор для случая, когда есть как короткое, так и длинное имя
+		/// @brief Конструктор класса
+		/// Конструктор для случая, когда есть как короткое, так и длинное имя
 		Argument<std::chrono::milliseconds>(char shortName, const char* longName, bool isValue, Validator<std::chrono::milliseconds>* validator = nullptr) :
 			ArgumentBase(shortName, longName, isValue), _validator(validator), _value(std::chrono::milliseconds::zero()) {}
 
-		/// конструктор для случая, когда нет короткого имени
+		/// Конструктор для случая, когда нет короткого имени
 		Argument<std::chrono::milliseconds>(const char* longName, bool isValue, Validator<std::chrono::milliseconds>* validator = nullptr) :
 			ArgumentBase('\0', longName, isValue), _validator(validator), _value(std::chrono::milliseconds::zero()) {}
 
 		using ArgumentBase::ArgumentBase;
 
-		/// @brief метод set() для присваивания значения полю, соответствующему в классе
+		/// @brief Установка значения аргументу
 		void SetValue(const std::chrono::milliseconds& value) {
 			_value = value;
 		}
@@ -206,7 +207,7 @@ namespace args_parse {
 			return false;
 		}
 
-		/// @brief get() для получения значения поля, соответствующего в классе
+		/// @brief Получение значения аргумента
 		[[nodiscard]] std::chrono::milliseconds GetValue() const { return _value; }
 	};
 }

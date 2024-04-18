@@ -183,7 +183,7 @@ namespace args_parse {
 		//валидатор может быть null
 		std::cout << "\nString: " << parametrs.argStr << " ; Name: " << parametrs.argName << " ;" << std::endl;
 		//в случае, если аргумент принимает значение, значение может быть пустым
-		if (parametrs.argValue.empty()) {
+		/*if (parametrs.argValue.empty()) {
 			if (i + 1 < _argc) {
 				parametrs.argValue = _argv[i + 1];
 				++i;
@@ -192,7 +192,7 @@ namespace args_parse {
 				std::string errorMessage = "Missing value for argument: " + std::string(parametrs.argName);
 				throw std::invalid_argument(errorMessage);
 			}
-		}
+		}*/
 		bool result = arg->ValidationAndSetValue(parametrs.argValue);
 		if (result) {
 			std::cout << "Value: " << parametrs.argValue << std::endl;

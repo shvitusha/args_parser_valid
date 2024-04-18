@@ -41,3 +41,4 @@ enable_testing()
 
 # Подключаем проект с тестами.
 add_subdirectory(test)
+add_subdirectory(directory_travers)
