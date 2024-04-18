@@ -109,12 +109,13 @@ namespace args_parse {
 			std::string_view argName;
 			std::string_view argValue;
 			BaseParametrs parametrs{ argStr, argName, argValue };
+			std::string_view nextArg(_argv[i + 1]);
 			//обработка длинного аргумента
 			if (argStr.substr(StartingPosition, LenghtTwoChar) == "--")
-				parametrs = ParseLongArgument(parametrs);
+				parametrs = ParseLongArgument(parametrs, nextArg);
 			//обработка короткого аргумента
 			else if (argStr[0] == '-')
-				parametrs = ParseShortArgument(parametrs);
+				parametrs = ParseShortArgument(parametrs, nextArg);
 			//строка может быть без аргументов
 			else {
 				std::string errorMessage = "Invalid argument format: " + std::string(parametrs.argStr);
@@ -125,36 +126,65 @@ namespace args_parse {
 		return true;
 	}
 
-	BaseParametrs ArgsParser::ParseLongArgument(BaseParametrs p_param)
+	bool ArgsParser::CheckNextArgument(std::string_view argStr) const {
+		//строка может быть пустой
+		//if (!argStr.empty()) {
+		//	//содержит ли префиксы задания имен
+		//	if (argStr[0] != '-' || argStr.substr(0, 2) != "--")
+		//		return true;
+		//}
+		return false;
+	}
+
+	BaseParametrs ArgsParser::ParseLongArgument(BaseParametrs p_param, std::string_view argStr)
 	{
 		p_param.argName = p_param.argStr.substr(LenghtTwoChar);
 		size_t equalPosition = p_param.argName.find('=');
 		size_t spacePosition = p_param.argName.find(' ');
+		bool isNextArgValue = CheckNextArgument(argStr);
+
 		//может не содержать =
 		if (equalPosition != std::string::npos)
 		{
 			p_param.argValue = p_param.argName.substr(equalPosition + LenghtOneChar);
 			p_param.argName = p_param.argName.substr(StartingPosition, equalPosition);
 		}
-		//может не содержать пробел
+
+		//может не содержать пробел (когда несколько слов)
 		else if (spacePosition != std::string::npos)
 		{
 			p_param.argValue = p_param.argName.substr(spacePosition + LenghtOneChar);
 			p_param.argName = p_param.argName.substr(StartingPosition, spacePosition);
 		}
+
+		//в случае с пробелом, значение может быть следующим аргументом
+		else if (isNextArgValue)
+			p_param.argValue = argStr;
+
 		// случай, когда не содержит ни одного из указанных разделителей
 		else if (p_param.argStr.length() > 3)
 			p_param.argValue = p_param.argStr.substr(p_param.argName.length() + LenghtTwoChar);
+
 		return p_param;
 	}
 
-	BaseParametrs ArgsParser::ParseShortArgument(BaseParametrs p_param) const
+	BaseParametrs ArgsParser::ParseShortArgument(BaseParametrs p_param, std::string_view argStr) const
 	{
 		p_param.argName = p_param.argStr.substr(LenghtOneChar, LenghtOneChar);
+		bool isNextArgValue = CheckNextArgument(argStr);
+
+		// значение может быть указано через "=" или " " когда несколько слов
 		if (p_param.argStr.length() > LenghtTwoChar && (p_param.argStr[2] == '=' || p_param.argStr[2] == ' '))
 			p_param.argValue = p_param.argStr.substr(3);
+
+		//в случае с пробелом, значение может быть следующим аргументом
+		else if (isNextArgValue)
+			p_param.argValue = argStr;
+
+		// случай, когда не содержит ни одного из указанных разделителей
 		else if (p_param.argStr.length() > LenghtTwoChar)
 			p_param.argValue = p_param.argStr.substr(LenghtTwoChar);
+
 		return p_param;
 	}
 
@@ -166,11 +196,13 @@ namespace args_parse {
 			arg->SetIsDefined(true);
 			//аргумент может не содержать параметр
 			if (arg->HasValue()) {
+				//значение может быть пустым
 				if (p_param.argValue.empty()) {
 					std::string errorMessage = "Missing value for argument: " + std::string(p_param.argName);
 					std::cerr << errorMessage << std::endl;
 					return;
 				}
+				//иначе валидация значения
 				ValidationValue(p_param, arg, i);
 			}
 		}
@@ -183,7 +215,7 @@ namespace args_parse {
 		//валидатор может быть null
 		std::cout << "\nString: " << parametrs.argStr << " ; Name: " << parametrs.argName << " ;" << std::endl;
 		//в случае, если аргумент принимает значение, значение может быть пустым
-		if (parametrs.argValue.empty()) {
+		/*if (parametrs.argValue.empty()) {
 			if (i + 1 < _argc) {
 				parametrs.argValue = _argv[i + 1];
 				++i;
@@ -192,7 +224,7 @@ namespace args_parse {
 				std::string errorMessage = "Missing value for argument: " + std::string(parametrs.argName);
 				throw std::invalid_argument(errorMessage);
 			}
-		}
+		}*/
 		bool result = arg->ValidationAndSetValue(parametrs.argValue);
 		if (result) {
 			std::cout << "Value: " << parametrs.argValue << std::endl;

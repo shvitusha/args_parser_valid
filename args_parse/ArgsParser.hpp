@@ -20,8 +20,11 @@ namespace args_parse {
 	};
 	/// @brief Структура для определения параметров
 	struct BaseParametrs {
+		/// Строка
 		std::string_view argStr;
+		/// Имя
 		std::string_view argName;
+		/// Значение
 		std::string_view argValue;
 	};
 
@@ -31,50 +34,53 @@ namespace args_parse {
 		/// Конструктор принимает количество аргументов и их значения
 		ArgsParser(int argc, const char** argv);
 
-		/// @brief Метод добавления аргумента командной строки в вектор
+		/// @brief Добавление аргумента командной строки в вектор
 		void Add(ArgumentBase* arg);
 
-		/// @brief Метод парсинга аргументов командной строки.
-		/// Он проходит по каждому аргументу командной строки и проверяет, был ли найден аргумент в векторе
+		/// @brief Парсинг аргументов командной строки.
+		/// Проходит по каждому аргументу командной строки и проверяет, был ли найден аргумент в векторе.
 		[[nodiscard]] bool Parse();
 
-		/// @brief Метод для вывода справки об использовании программы.
+		/// @brief Вывод справки об использовании программы.
 		/// Выводит описание всех добавленных аргументов командной строки
 		void ShowHelp() const;
 
-		/// @brief Метод для вывода дополнительной справки об использовании программы.s
+		/// @brief Вывод дополнительной справки об использовании программы.s
 		/// Выводит описание всех добавленных аргументов, принимающих параметр, и как использовать.
 		void ShowHelpVerbose() const;
 
-		/// @brief Метод поиска аргумента.
+		/// @brief Поиск аргумента.
 		/// В зависимости от оператора вызывает методы поиска короткого или длинного имени.
 		[[nodiscard]] ArgumentBase* FindArgument(BaseParametrs param) const;
 
 	private:
-		/// @brief Метод для разбора длинных аргументов командной строки.
+		/// @brief Разбор длинных аргументов командной строки.
 		/// Извлекает имя и значение аргумента для дальнейшей обработки.
-		[[nodiscard]] BaseParametrs ParseLongArgument(BaseParametrs p_param);
+		[[nodiscard]] BaseParametrs ParseLongArgument(BaseParametrs p_param, std::string_view argStr);
 
-		/// @brief Метод для разбора коротких аргументов командной строки.
+		/// @brief Разбор коротких аргументов командной строки.
 		/// Извлекает имя и значение аргумента для дальнейшей обработки.
-		[[nodiscard]] BaseParametrs ParseShortArgument(BaseParametrs p_param) const;
+		[[nodiscard]] BaseParametrs ParseShortArgument(BaseParametrs p_param, std::string_view argStr) const;
 
-		/// @brief Метод для обработки одного аргумента командной строки.
-		/// Также проверяет его наличие, наличие у него значения, если да, то его проверку.
+		/// @brief Обработка одного аргумента командной строки.
+		/// Также проверяет его наличие, наличие у него значения, если да, вызывает валидацию.
 		void ProcessArgument(BaseParametrs p_param, int& i) const;
 
-		/// @brief Метод валидации значения
+		/// @brief Валидация значения
 		void ValidationValue(BaseParametrs p_param, ArgumentBase* arg, int& i) const;
 
-		/// @brief Метод для поиска длинного имени, если оно есть
+		/// @brief Поиск длинного имени, если оно есть
 		[[nodiscard]] ArgumentBase* FindLongNameArg(std::string_view item) const;
 
-		/// @brief Метод поиска короткого имени, если оно есть
+		/// @brief Поиск короткого имени, если оно есть
 		[[nodiscard]] ArgumentBase* FindShortNameArg(std::string_view item) const;
 
-		/// @brief Метод, который проверяет является ли строка оператором.
+		/// @brief Проверяет является ли строка оператором.
 		/// Возвращает какой оператор был использован
 		[[nodiscard]] OperatorType IsOperator(std::string_view operatString) const;
+
+		/// @brief Смотрит, является ли следующий аргумент значение предыдущего
+		[[nodiscard]] bool CheckNextArgument(std::string_view argStr) const;
 
 		/// Сколько всего аргументов.
 		int _argc;
