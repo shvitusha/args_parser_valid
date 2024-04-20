@@ -4,6 +4,7 @@
 #include <iostream>
 #include <sstream>
 #include <optional>
+#include <filesystem>
 
 namespace args_parse {
 #pragma region Validation
@@ -15,6 +16,7 @@ namespace args_parse {
 
 		[[nodiscard]] std::tuple<bool, T> ValidValue(std::string_view value) const {
 			std::string str = std::string(value);
+			//СЃС‚СЂРѕРєР° РјРѕР¶РµС‚ Р±С‹С‚СЊ РїСѓСЃС‚РѕР№
 			if (str.empty()) {
 				return std::make_tuple(false, T{});
 			}
@@ -34,15 +36,16 @@ namespace args_parse {
 
 		[[nodiscard]] std::tuple<bool, std::chrono::milliseconds> ValidValue(std::string_view  value) const {
 			long long l_value;
+			//РµРґРёРЅРёС†Р° РёР·РјРµСЂРµРЅРёСЏ
 			std::string unit;
 			std::string temp = std::string(value);
 			std::istringstream ss{ temp };
-			// Считываем значение и единицу измерения времени из потока
+			// РЎС‡РёС‚С‹РІР°РµРј Р·РЅР°С‡РµРЅРёРµ Рё РµРґРёРЅРёС†Сѓ РёР·РјРµСЂРµРЅРёСЏ РІСЂРµРјРµРЅРё РёР· РїРѕС‚РѕРєР°
 			ss >> l_value >> unit;
 
 			std::chrono::milliseconds ms = std::chrono::milliseconds::zero();
 
-			// Преобразуем значение и единицу измерения времени в микросекунды
+			// РџСЂРµРѕР±СЂР°Р·СѓРµРј Р·РЅР°С‡РµРЅРёРµ Рё РµРґРёРЅРёС†Сѓ РёР·РјРµСЂРµРЅРёСЏ РІСЂРµРјРµРЅРё РІ РјРёРєСЂРѕСЃРµРєСѓРЅРґС‹
 			if (unit == "ms") {
 				ms = std::chrono::milliseconds(l_value);
 			}
@@ -56,68 +59,89 @@ namespace args_parse {
 			return std::make_tuple(true, ms);
 		}
 	};
+
+	template<>
+	class Validator<std::string> {
+	public:
+		Validator<std::string>() = default;
+
+		[[nodiscard]] std::tuple<bool, std::string> ValidValue(std::string_view value) const {
+			std::filesystem::path dirPath = std::string(value);
+
+			// РџСЂРѕРІРµСЂСЏРµРј, СЃСѓС‰РµСЃС‚РІСѓРµС‚ Р»Рё РєР°С‚Р°Р»РѕРі
+			if (!std::filesystem::exists(dirPath))
+				return std::make_tuple(false, std::string{});
+
+			// РџСЂРѕРІРµСЂСЏРµРј, СЏРІР»СЏРµС‚СЃСЏ Р»Рё РїСѓС‚СЊ РґРёСЂРµРєС‚РѕСЂРёРµР№
+			if (!std::filesystem::is_directory(dirPath))
+				return std::make_tuple(false, std::string{});
+
+			// РџСЂРѕРІРµСЂСЏРµРј, РґРѕСЃС‚СѓРїРµРЅ Р»Рё РєР°С‚Р°Р»РѕРі РґР»СЏ С‡С‚РµРЅРёСЏ
+			if (std::filesystem::directory_iterator(dirPath) == std::filesystem::directory_iterator())
+				return std::make_tuple(false, std::string{});
+
+			return std::make_tuple(true, dirPath.string());
+		}
+	};
+
 #pragma endregion
 
 	class ArgumentBase {
 	public:
-		/// @brief Конструктор класса
-		/// Конструктор для случая, когда есть как короткое, так и длинное имя
+		/// @brief РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РєР»Р°СЃСЃР°
+		/// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РґР»СЏ СЃР»СѓС‡Р°СЏ, РєРѕРіРґР° РµСЃС‚СЊ РєР°Рє РєРѕСЂРѕС‚РєРѕРµ, С‚Р°Рє Рё РґР»РёРЅРЅРѕРµ РёРјСЏ
 		ArgumentBase(char shortName, const char* longName, bool isValue) :
 			_shortName(shortName), _longName(longName), _isValue(isValue), _description(""), _isDefined(false) {}
 
-		/// Конструктор для случая, когда нет короткого имени
+		/// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РґР»СЏ СЃР»СѓС‡Р°СЏ, РєРѕРіРґР° РЅРµС‚ РєРѕСЂРѕС‚РєРѕРіРѕ РёРјРµРЅРё
 		ArgumentBase(const char* longName, bool isValue) : ArgumentBase('\0', longName, isValue) {}
 
-		/// Конструктор по умолчанию
+		/// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
 		ArgumentBase() : ArgumentBase('\0', "", false) {}
 
-		/// @brief Проверка может ли быть у аргумента значение
+		/// @brief РџСЂРѕРІРµСЂРєР° РјРѕР¶РµС‚ Р»Рё Р±С‹С‚СЊ Сѓ Р°СЂРіСѓРјРµРЅС‚Р° Р·РЅР°С‡РµРЅРёРµ
 		[[nodiscard]] bool HasValue() const { return _isValue; }
 
-		/// @brief Получение длинного имени
+		/// @brief РџРѕР»СѓС‡РµРЅРёРµ РґР»РёРЅРЅРѕРіРѕ РёРјРµРЅРё
 		[[nodiscard]] std::string GetLongName() const { return _longName; }
 
-		/// @brief Установка длинного имени
+		/// @brief РЈСЃС‚Р°РЅРѕРІРєР° РґР»РёРЅРЅРѕРіРѕ РёРјРµРЅРё
 		void SetLongName(const char* longName) { _longName = longName; }
 
-		/// @brief Получение короткого имени
+		/// @brief РџРѕР»СѓС‡РµРЅРёРµ РєРѕСЂРѕС‚РєРѕРіРѕ РёРјРµРЅРё
 		[[nodiscard]] char GetShortName() const { return _shortName; }
 
-		/// @brief Установка короткого имени
+		/// @brief РЈСЃС‚Р°РЅРѕРІРєР° РєРѕСЂРѕС‚РєРѕРіРѕ РёРјРµРЅРё
 		void SetShortName(const char shortName) { _shortName = shortName; }
 
-		/// @brief Получение описания аргумента
+		/// @brief РџРѕР»СѓС‡РµРЅРёРµ РѕРїРёСЃР°РЅРёСЏ Р°СЂРіСѓРјРµРЅС‚Р°
 		[[nodiscard]] std::string GetDescription() const { return _description; }
 
-		/// @brief Установка описания аргумента
+		/// @brief РЈСЃС‚Р°РЅРѕРІРєР° РѕРїРёСЃР°РЅРёСЏ Р°СЂРіСѓРјРµРЅС‚Р°
 		void SetDescription(const std::string& description) { _description = description; }
 
-		/// @brief Установка определения аргумента
+		/// @brief РЈСЃС‚Р°РЅРѕРІРєР° РѕРїСЂРµРґРµР»РµРЅРёСЏ Р°СЂРіСѓРјРµРЅС‚Р°
 		void SetIsDefined(const bool isDefined) { _isDefined = isDefined; }
 
-		/// @brief Проверка определения аргумента
+		/// @brief РџСЂРѕРІРµСЂРєР° РѕРїСЂРµРґРµР»РµРЅРёСЏ Р°СЂРіСѓРјРµРЅС‚Р°
 		[[nodiscard]] bool GetIsDefined() const { return _isDefined; }
 
-		//[[nodiscard]] virtual const SharedValidator* GetValidator() const = 0;
-
-		/// @brief Проверка существования валидатора
+		/// @brief РџСЂРѕРІРµСЂРєР° СЃСѓС‰РµСЃС‚РІРѕРІР°РЅРёСЏ РІР°Р»РёРґР°С‚РѕСЂР°
 		[[nodiscard]] virtual bool IsValidatorExist() const = 0;
 
-		/// @brief Получение результата валидации и установка значения
+		/// @brief РџРѕР»СѓС‡РµРЅРёРµ СЂРµР·СѓР»СЊС‚Р°С‚Р° РІР°Р»РёРґР°С†РёРё Рё СѓСЃС‚Р°РЅРѕРІРєР° Р·РЅР°С‡РµРЅРёСЏ
 		[[nodiscard]] virtual bool ValidationAndSetValue(std::string_view value) = 0;
 
-		//virtual void SetValue(const std::string& value) = 0;
-
 	private:
-		///Короткое описание аргумента
+		///РљРѕСЂРѕС‚РєРѕРµ РѕРїРёСЃР°РЅРёРµ Р°СЂРіСѓРјРµРЅС‚Р°
 		char _shortName;
-		///Длинное описание аргумента
+		///Р”Р»РёРЅРЅРѕРµ РѕРїРёСЃР°РЅРёРµ Р°СЂРіСѓРјРµРЅС‚Р°
 		std::string _longName;
-		///Дополнительное описание аргумента
+		///Р”РѕРїРѕР»РЅРёС‚РµР»СЊРЅРѕРµ РѕРїРёСЃР°РЅРёРµ Р°СЂРіСѓРјРµРЅС‚Р°
 		std::string _description;
-		///Флаг на наличие параметра
+		///Р¤Р»Р°Рі РЅР° РЅР°Р»РёС‡РёРµ РїР°СЂР°РјРµС‚СЂР°
 		bool _isValue;
-		///Флаг на определение аргумента
+		///Р¤Р»Р°Рі РЅР° РѕРїСЂРµРґРµР»РµРЅРёРµ Р°СЂРіСѓРјРµРЅС‚Р°
 		bool _isDefined;
 	};
 
@@ -126,26 +150,28 @@ namespace args_parse {
 	public:
 		using ArgumentBase::ArgumentBase;
 
-		/// @brief Конструктор класса
-		/// Конструктор для случая, когда есть как короткое, так и длинное имя
+		/// @brief РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РєР»Р°СЃСЃР°
+		/// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РґР»СЏ СЃР»СѓС‡Р°СЏ, РєРѕРіРґР° РµСЃС‚СЊ РєР°Рє РєРѕСЂРѕС‚РєРѕРµ, С‚Р°Рє Рё РґР»РёРЅРЅРѕРµ РёРјСЏ
 		Argument(char shortName, const char* longName, bool isValue, Validator<T>* validator) :
 			ArgumentBase(shortName, longName, isValue), _validator(validator) {}
 
-		/// Конструктор для случая, когда нет короткого имени
+		/// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РґР»СЏ СЃР»СѓС‡Р°СЏ, РєРѕРіРґР° РЅРµС‚ РєРѕСЂРѕС‚РєРѕРіРѕ РёРјРµРЅРё
 		Argument(const char* longName, bool isValue, Validator<T>* validator) :
 			ArgumentBase('\0', longName, isValue), _validator(validator) {}
 
-		/// @brief Установка значения аргументу
+		/// @brief РЈСЃС‚Р°РЅРѕРІРєР° Р·РЅР°С‡РµРЅРёСЏ Р°СЂРіСѓРјРµРЅС‚Сѓ
 		void SetValue(const std::optional<T>& value) {
 			_value = value;
 		}
+		
+		/// @brief РџСЂРѕРІРµСЂСЏРµС‚ РѕРїСЂРµРґРµР» Р»Рё РІР°Р»РёРґР°С‚РѕСЂ
 		bool IsValidatorExist() const override
 		{
 			if (_validator == nullptr) return false;
 			return true;
 		}
 
-		/// @brief Получение значения аргумента
+		/// @brief РџРѕР»СѓС‡РµРЅРёРµ Р·РЅР°С‡РµРЅРёСЏ Р°СЂРіСѓРјРµРЅС‚Р°
 		[[nodiscard]] std::optional<T> GetValue() const { return _value; }
 
 		bool ValidationAndSetValue(std::string_view value)  override {
@@ -158,37 +184,38 @@ namespace args_parse {
 		}
 
 	protected:
-		///Значение аргумента
+		///Р—РЅР°С‡РµРЅРёРµ Р°СЂРіСѓРјРµРЅС‚Р°
 		std::optional<T> _value;
-		///Валидатор
+		///Р’Р°Р»РёРґР°С‚РѕСЂ
 		Validator<T>* _validator;
 	};
 
 	template<>
 	class Argument<std::chrono::milliseconds> : public ArgumentBase {
 	private:
-		///Значение аргумента
+		///Р—РЅР°С‡РµРЅРёРµ Р°СЂРіСѓРјРµРЅС‚Р°
 		std::chrono::milliseconds _value;
-		///Валидатор
+		///Р’Р°Р»РёРґР°С‚РѕСЂ
 		Validator<std::chrono::milliseconds>* _validator;
 
 	public:
-		/// @brief Конструктор класса
-		/// Конструктор для случая, когда есть как короткое, так и длинное имя
+		/// @brief РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РєР»Р°СЃСЃР°
+		/// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РґР»СЏ СЃР»СѓС‡Р°СЏ, РєРѕРіРґР° РµСЃС‚СЊ РєР°Рє РєРѕСЂРѕС‚РєРѕРµ, С‚Р°Рє Рё РґР»РёРЅРЅРѕРµ РёРјСЏ
 		Argument<std::chrono::milliseconds>(char shortName, const char* longName, bool isValue, Validator<std::chrono::milliseconds>* validator = nullptr) :
 			ArgumentBase(shortName, longName, isValue), _validator(validator), _value(std::chrono::milliseconds::zero()) {}
 
-		/// Конструктор для случая, когда нет короткого имени
+		/// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РґР»СЏ СЃР»СѓС‡Р°СЏ, РєРѕРіРґР° РЅРµС‚ РєРѕСЂРѕС‚РєРѕРіРѕ РёРјРµРЅРё
 		Argument<std::chrono::milliseconds>(const char* longName, bool isValue, Validator<std::chrono::milliseconds>* validator = nullptr) :
 			ArgumentBase('\0', longName, isValue), _validator(validator), _value(std::chrono::milliseconds::zero()) {}
 
 		using ArgumentBase::ArgumentBase;
 
-		/// @brief Установка значения аргументу
+		/// @brief РЈСЃС‚Р°РЅРѕРІРєР° Р·РЅР°С‡РµРЅРёСЏ Р°СЂРіСѓРјРµРЅС‚Сѓ
 		void SetValue(const std::chrono::milliseconds& value) {
 			_value = value;
 		}
 
+		/// @brief РџСЂРѕРІРµСЂСЏРµС‚ РѕРїСЂРµРґРµР» Р»Рё РІР°Р»РёРґР°С‚РѕСЂ
 		bool IsValidatorExist() const override
 		{
 			if (_validator == nullptr) return false;
@@ -207,7 +234,7 @@ namespace args_parse {
 			return false;
 		}
 
-		/// @brief Получение значения аргумента
+		/// @brief РџРѕР»СѓС‡РµРЅРёРµ Р·РЅР°С‡РµРЅРёСЏ Р°СЂРіСѓРјРµРЅС‚Р°
 		[[nodiscard]] std::chrono::milliseconds GetValue() const { return _value; }
 	};
 }

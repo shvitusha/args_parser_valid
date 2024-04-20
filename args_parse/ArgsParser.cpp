@@ -12,7 +12,7 @@ namespace args_parse {
 	ArgsParser::ArgsParser(int argc, const char** argv) : _argc(argc), _argv(argv) {}
 
 	void ArgsParser::Add(ArgumentBase* arg) {
-		// Такое имя аргумента может уже существовать
+		// РўР°РєРѕРµ РёРјСЏ Р°СЂРіСѓРјРµРЅС‚Р° РјРѕР¶РµС‚ СѓР¶Рµ СЃСѓС‰РµСЃС‚РІРѕРІР°С‚СЊ
 		for (const auto& existingArg : _args) {
 			if (existingArg->GetLongName() == arg->GetLongName()) {
 				throw std::invalid_argument("Argument with the same name already exists");
@@ -46,7 +46,7 @@ namespace args_parse {
 		std::cout << "To assign a value to an argument, enter a[-short] or [--long] name" << std::endl;
 		std::cout << "and a parameter with an [parameter]/[=parametr]/[ parametr].\n" << std::endl;
 	}
-	//& string_view
+	
 	OperatorType ArgsParser::IsOperator(std::string_view operatString) const
 	{
 		size_t position = operatString.find("--");
@@ -71,7 +71,7 @@ namespace args_parse {
 		for (const auto& arg : _args)
 		{
 			auto longArg = arg->GetLongName();
-			//строка может быть префиксом
+			//СЃС‚СЂРѕРєР° РјРѕР¶РµС‚ Р±С‹С‚СЊ РїСЂРµС„РёРєСЃРѕРј
 			if (item.length() > 1 && item.length() <= longArg.length()
 				&& longArg.compare(StartingPosition, item.length(), item) == 0) {
 				matchingCount++;
@@ -109,13 +109,13 @@ namespace args_parse {
 			std::string_view argName;
 			std::string_view argValue;
 			BaseParametrs parametrs{ argStr, argName, argValue };
-			//обработка длинного аргумента
+			//РѕР±СЂР°Р±РѕС‚РєР° РґР»РёРЅРЅРѕРіРѕ Р°СЂРіСѓРјРµРЅС‚Р°
 			if (argStr.substr(StartingPosition, LenghtTwoChar) == "--")
 				parametrs = ParseLongArgument(parametrs);
-			//обработка короткого аргумента
+			//РѕР±СЂР°Р±РѕС‚РєР° РєРѕСЂРѕС‚РєРѕРіРѕ Р°СЂРіСѓРјРµРЅС‚Р°
 			else if (argStr[0] == '-')
 				parametrs = ParseShortArgument(parametrs);
-			//строка может быть без аргументов
+			//СЃС‚СЂРѕРєР° РјРѕР¶РµС‚ Р±С‹С‚СЊ Р±РµР· Р°СЂРіСѓРјРµРЅС‚РѕРІ
 			else {
 				std::string errorMessage = "Invalid argument format: " + std::string(parametrs.argStr);
 				throw std::invalid_argument(errorMessage);
@@ -130,19 +130,19 @@ namespace args_parse {
 		p_param.argName = p_param.argStr.substr(LenghtTwoChar);
 		size_t equalPosition = p_param.argName.find('=');
 		size_t spacePosition = p_param.argName.find(' ');
-		//может не содержать =
+		//РјРѕР¶РµС‚ РЅРµ СЃРѕРґРµСЂР¶Р°С‚СЊ =
 		if (equalPosition != std::string::npos)
 		{
 			p_param.argValue = p_param.argName.substr(equalPosition + LenghtOneChar);
 			p_param.argName = p_param.argName.substr(StartingPosition, equalPosition);
 		}
-		//может не содержать пробел
+		//РјРѕР¶РµС‚ РЅРµ СЃРѕРґРµСЂР¶Р°С‚СЊ РїСЂРѕР±РµР»
 		else if (spacePosition != std::string::npos)
 		{
 			p_param.argValue = p_param.argName.substr(spacePosition + LenghtOneChar);
 			p_param.argName = p_param.argName.substr(StartingPosition, spacePosition);
 		}
-		// случай, когда не содержит ни одного из указанных разделителей
+		// СЃР»СѓС‡Р°Р№, РєРѕРіРґР° РЅРµ СЃРѕРґРµСЂР¶РёС‚ РЅРё РѕРґРЅРѕРіРѕ РёР· СѓРєР°Р·Р°РЅРЅС‹С… СЂР°Р·РґРµР»РёС‚РµР»РµР№
 		else if (p_param.argStr.length() > 3)
 			p_param.argValue = p_param.argStr.substr(p_param.argName.length() + LenghtTwoChar);
 		return p_param;
@@ -161,10 +161,10 @@ namespace args_parse {
 	void ArgsParser::ProcessArgument(BaseParametrs p_param, int& i) const
 	{
 		ArgumentBase* arg = FindArgument(p_param);
-		//ссылка может быть null
+		//СЃСЃС‹Р»РєР° РјРѕР¶РµС‚ Р±С‹С‚СЊ null
 		if (arg != nullptr) {
 			arg->SetIsDefined(true);
-			//аргумент может не содержать параметр
+			//Р°СЂРіСѓРјРµРЅС‚ РјРѕР¶РµС‚ РЅРµ СЃРѕРґРµСЂР¶Р°С‚СЊ РїР°СЂР°РјРµС‚СЂ
 			if (arg->HasValue()) {
 				if (p_param.argValue.empty()) {
 					std::string errorMessage = "Missing value for argument: " + std::string(p_param.argName);
@@ -180,19 +180,9 @@ namespace args_parse {
 	}
 
 	void ArgsParser::ValidationValue(BaseParametrs parametrs, ArgumentBase* arg, int& i) const {
-		//валидатор может быть null
+		//РІР°Р»РёРґР°С‚РѕСЂ РјРѕР¶РµС‚ Р±С‹С‚СЊ null
 		std::cout << "\nString: " << parametrs.argStr << " ; Name: " << parametrs.argName << " ;" << std::endl;
-		//в случае, если аргумент принимает значение, значение может быть пустым
-		/*if (parametrs.argValue.empty()) {
-			if (i + 1 < _argc) {
-				parametrs.argValue = _argv[i + 1];
-				++i;
-			}
-			else {
-				std::string errorMessage = "Missing value for argument: " + std::string(parametrs.argName);
-				throw std::invalid_argument(errorMessage);
-			}
-		}*/
+		//РІ СЃР»СѓС‡Р°Рµ, РµСЃР»Рё Р°СЂРіСѓРјРµРЅС‚ РїСЂРёРЅРёРјР°РµС‚ Р·РЅР°С‡РµРЅРёРµ, Р·РЅР°С‡РµРЅРёРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РїСѓСЃС‚С‹Рј		
 		bool result = arg->ValidationAndSetValue(parametrs.argValue);
 		if (result) {
 			std::cout << "Value: " << parametrs.argValue << std::endl;
@@ -208,11 +198,9 @@ namespace args_parse {
 		ArgumentBase* arg = nullptr;
 		if (o_type == OperatorType::Long) {
 			arg = FindLongNameArg(param.argName);
-			//return arg;
 		}
 		else if (o_type == OperatorType::Short) {
 			arg = FindShortNameArg(param.argName);
-			//return arg;
 		}
 		return arg;
 	}
