@@ -1,15 +1,15 @@
-# В современном CMake рекомендуется сразу задавать нужную версию CMake.
+# Р’ СЃРѕРІСЂРµРјРµРЅРЅРѕРј CMake СЂРµРєРѕРјРµРЅРґСѓРµС‚СЃСЏ СЃСЂР°Р·Сѓ Р·Р°РґР°РІР°С‚СЊ РЅСѓР¶РЅСѓСЋ РІРµСЂСЃРёСЋ CMake.
 cmake_minimum_required(VERSION 3.28)
 
-# Говорим CMake что за проект.
+# Р“РѕРІРѕСЂРёРј CMake С‡С‚Рѕ Р·Р° РїСЂРѕРµРєС‚.
 project(args_parse_demo_app LANGUAGES CXX)
 
-# Определяем исполнимый файл и из чего он состоит.
-add_executable(directory_travers_demo DirectoryTravers.hpp main.cpp)
+# РћРїСЂРµРґРµР»СЏРµРј РёСЃРїРѕР»РЅРёРјС‹Р№ С„Р°Р№Р» Рё РёР· С‡РµРіРѕ РѕРЅ СЃРѕСЃС‚РѕРёС‚.
+add_executable(directory_travers_demo main.cpp)
 
 add_compile_options(/utf-8)
 
-# Библиотека args_parse должна быть прилинкована к этому исполнимому файлу.
+# Р‘РёР±Р»РёРѕС‚РµРєР° args_parse РґРѕР»Р¶РЅР° Р±С‹С‚СЊ РїСЂРёР»РёРЅРєРѕРІР°РЅР° Рє СЌС‚РѕРјСѓ РёСЃРїРѕР»РЅРёРјРѕРјСѓ С„Р°Р№Р»Сѓ.
 target_link_libraries(directory_travers_demo PRIVATE args_parse)
 
 target_compile_features(directory_travers_demo PUBLIC cxx_std_17)
