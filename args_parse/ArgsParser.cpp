@@ -122,17 +122,20 @@ namespace args_parse {
 				throw std::invalid_argument(errorMessage);
 			}
 			ProcessArgument(parametrs, i);
+
+			if (!parametrs.argValue.empty())
+				++i;
 		}
 		return true;
 	}
 
 	bool ArgsParser::CheckNextArgument(std::string_view argStr) const {
 		//строка может быть пустой
-		//if (!argStr.empty()) {
-		//	//содержит ли префиксы задани€ имен
-		//	if (argStr[0] != '-' || argStr.substr(0, 2) != "--")
-		//		return true;
-		//}
+		if (!argStr.empty()) {
+			//содержит ли префиксы задани€ имен
+			if (argStr[0] != '-' || argStr.substr(0, 2) != "--")
+				return true;
+		}
 		return false;
 	}
 
