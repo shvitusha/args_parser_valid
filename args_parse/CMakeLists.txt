@@ -1,10 +1,10 @@
-# в современном CMake рекомендуетс¤ сразу задавать нужную версию CMake.
+# РІ СЃРѕРІСЂРµРјРµРЅРЅРѕРј CMake СЂРµРєРѕРјРµРЅРґСѓРµС‚СЃВ¤ СЃСЂР°Р·Сѓ Р·Р°РґР°РІР°С‚СЊ РЅСѓР¶РЅСѓСЋ РІРµСЂСЃРёСЋ CMake.
 cmake_minimum_required(VERSION 3.27)
 
-# говорим CMake что за проект.
+# РіРѕРІРѕСЂРёРј CMake С‡С‚Рѕ Р·Р° РїСЂРѕРµРєС‚.
 project(args_parse_lib LANGUAGES CXX)
 
-# определяем библиотеку и указываем из чего она состоит.
+# РѕРїСЂРµРґРµР»СЏРµРј Р±РёР±Р»РёРѕС‚РµРєСѓ Рё СѓРєР°Р·С‹РІР°РµРј РёР· С‡РµРіРѕ РѕРЅР° СЃРѕСЃС‚РѕРёС‚.
 add_library(args_parse STATIC ForwardDeclaration.hpp argument.hpp ArgsParser.cpp ArgsParser.hpp)
 add_compile_options(/utf-8)
 

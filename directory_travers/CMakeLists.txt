@@ -5,9 +5,11 @@ cmake_minimum_required(VERSION 3.28)
 project(args_parse_demo_app LANGUAGES CXX)
 
 # Определяем исполнимый файл и из чего он состоит.
-add_executable(args_parse_demo main.cpp)
+add_executable(directory_travers_demo main.cpp)
 
 add_compile_options(/utf-8)
 
 # Библиотека args_parse должна быть прилинкована к этому исполнимому файлу.
-target_link_libraries(args_parse_demo PRIVATE args_parse)
+target_link_libraries(directory_travers_demo PRIVATE args_parse)
+
+target_compile_features(directory_travers_demo PUBLIC cxx_std_17)
