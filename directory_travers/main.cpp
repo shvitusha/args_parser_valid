@@ -181,7 +181,9 @@ int main(int argc, const char** argv) {
 	thread_pool.SetDescription("Sets the number of threads (number)");
 	args_parse::Argument<std::chrono::milliseconds> debug_sleep(
 		'd', "debug-sleep", true, new args_parse::Validator<std::chrono::milliseconds>());
+	debug_sleep.SetDescription("Input of the debug sleep thread (ms/s)");
 	args_parse::Argument<std::string> source_path('s', "source-path", true, new args_parse::Validator<std::string>());
+	source_path.SetDescription("Enter the directory path (without any delimiter/=) (path)");
 
 	parser.Add(&help);
 	parser.Add(&thread_pool);

@@ -44,7 +44,7 @@ namespace args_parse {
 			}
 		}
 		std::cout << "To assign a value to an argument, enter a[-short] or [--long] name" << std::endl;
-		std::cout << "and a parameter with an [parameter]/[=parametr]/[ parametr].\n" << std::endl;
+		std::cout << "and a parameter with an [parameter]/[=parametr].\n" << std::endl;
 	}
 	
 	OperatorType ArgsParser::IsOperator(std::string_view operatString) const
