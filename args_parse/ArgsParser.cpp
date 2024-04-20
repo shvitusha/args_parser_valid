@@ -171,7 +171,8 @@ namespace args_parse {
 					std::cerr << errorMessage << std::endl;
 					return;
 				}
-				ValidationValue(p_param, arg, i);
+				if(arg->IsValidatorExist());
+					ValidationValue(p_param, arg, i);
 			}
 		}
 		else {
@@ -180,7 +181,6 @@ namespace args_parse {
 	}
 
 	void ArgsParser::ValidationValue(BaseParametrs parametrs, ArgumentBase* arg, int& i) const {
-		//валидатор может быть null
 		std::cout << "\nString: " << parametrs.argStr << " ; Name: " << parametrs.argName << " ;" << std::endl;
 		//в случае, если аргумент принимает значение, значение может быть пустым		
 		bool result = arg->ValidationAndSetValue(parametrs.argValue);

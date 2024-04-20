@@ -164,7 +164,7 @@ namespace args_parse {
 			_value = value;
 		}
 		
-		/// @brief Проверяет определ ли валидатор
+		/// @brief Проверяет определен ли валидатор
 		bool IsValidatorExist() const override
 		{
 			if (_validator == nullptr) return false;
@@ -176,7 +176,7 @@ namespace args_parse {
 
 		bool ValidationAndSetValue(std::string_view value)  override {
 			const std::tuple<bool, T> valid_tuple = _validator->ValidValue(value);
-			if (IsValidatorExist() && std::get<0>(valid_tuple)) {
+			if (std::get<0>(valid_tuple)) {
 				SetValue(std::get<1>(valid_tuple));
 				return true;
 			}
@@ -215,7 +215,7 @@ namespace args_parse {
 			_value = value;
 		}
 
-		/// @brief Проверяет определ ли валидатор
+		/// @brief Проверяет определен ли валидатор
 		bool IsValidatorExist() const override
 		{
 			if (_validator == nullptr) return false;
@@ -223,9 +223,6 @@ namespace args_parse {
 		}
 
 		bool ValidationAndSetValue(std::string_view value) override {
-			if (!IsValidatorExist())
-				return false;
-
 			const std::tuple<bool, std::chrono::milliseconds> valid_tuple = _validator->ValidValue(value);
 			if (std::get<0>(valid_tuple)) {
 				SetValue(std::get<1>(valid_tuple));
